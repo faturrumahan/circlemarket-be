@@ -77,7 +77,20 @@ export class AccountController {
     );
 
     // create refresh token and store to db
-    const refreshToken = uuidv4();
+    const refreshToken = jwt.sign(
+      {
+        id: user.id,
+        refreshToken: uuidv4(),
+      },
+      config.jwt.secret,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS256',
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        notBefore: '0', // Cannot use before now, can be configured to be deferred.
+      }
+    );
     const updatedUser = await this.unitOfService.User.update(user.id, {
       refreshToken: refreshToken, // Generate a new refresh token
     });
@@ -176,7 +189,20 @@ export class AccountController {
     );
 
     //add new refresh token and store to db
-    const newRefreshToken = uuidv4();
+    const newRefreshToken = jwt.sign(
+      {
+        id: (decoded as any).id,
+        refreshToken: uuidv4(),
+      },
+      config.jwt.secret,
+      {
+        expiresIn: '7d',
+        algorithm: 'HS256',
+        audience: config.jwt.audience,
+        issuer: config.jwt.issuer,
+        notBefore: '0', // Cannot use before now, can be configured to be deferred.
+      }
+    );
     const updatedUser = await this.unitOfService.User.update((decoded as any).id, {
       refreshToken: newRefreshToken, // Generate a new refresh token
     });
@@ -209,14 +235,9 @@ export class AccountController {
    */
   logout = async (req: Request, res: Response): Promise<Response<CustomResponse<null>>> => {
     // Invalidate the token (implementation depends on token storage strategy, e.g., blacklist)
-    const { token } = req.body;
+    const { currentUserId } = req.body;
 
-    const decoded = jwt.verify(token, config.jwt.secret || '', {
-      audience: config.jwt.audience,
-      issuer: config.jwt.issuer,
-    });
-
-    const updatedUser = await this.unitOfService.User.update((decoded as any).id, {
+    const updatedUser = await this.unitOfService.User.update(currentUserId, {
       refreshToken: null, // Invalidate the refresh token
     });
 

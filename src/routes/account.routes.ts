@@ -7,6 +7,7 @@ import { TYPES } from '../config/ioc.types';
 import { AccountController } from '../controllers/account.controller';
 import CreateUserValidator from '../validators/user.validator';
 import authentication from '../middlewares/authentication.middleware';
+import RefreshTokenValidator from '../validators/refreshToken.validator';
 
 const accountRouter = Router();
 
@@ -14,6 +15,6 @@ const accountController = container.get<AccountController>(TYPES.AccountControll
 
 accountRouter.post('/login', [validateSchema(LoginValidator)], asyncHandler(accountController.login));
 accountRouter.post('/register', [validateSchema(CreateUserValidator)], asyncHandler(accountController.register));
-accountRouter.post('/refresh-token', [authentication], asyncHandler(accountController.refreshToken));
+accountRouter.post('/refresh-token', [validateSchema(RefreshTokenValidator)], asyncHandler(accountController.refreshToken));
 accountRouter.post('/logout', [authentication], asyncHandler(accountController.logout));
 export default accountRouter;
