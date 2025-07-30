@@ -11,6 +11,8 @@ import { CreateUserModel } from '../models/user.model';
 import CustomError from '../exceptions/custom-error';
 import { UserDto } from '../dtos/user.dto';
 import { UserRole } from '../prisma/generated';
+import { v4 as uuidv4 } from 'uuid';
+import { ITokenResponse } from '../interfaces/tokenResponse.interface';
 
 export class AccountController {
   constructor(private unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
@@ -30,9 +32,9 @@ export class AccountController {
    * - Returns HTTP 401 status code if the credentials are invalid.
    * - Returns HTTP 200 status code with the token if login is successful.
    */
-  login = async (req: Request, res: Response): Promise<Response<CustomResponse<string>>> => {
+  login = async (req: Request, res: Response): Promise<Response<CustomResponse<ITokenResponse>>> => {
     const model = req.body as LoginModel;
-    let response: CustomResponse<string>;
+    let response: CustomResponse<ITokenResponse>;
 
     const user = await this.unitOfService.User.findByEmail(model.email, true);
     if (!user) {
@@ -66,7 +68,7 @@ export class AccountController {
       },
       config.jwt.secret,
       {
-        expiresIn: '30d',
+        expiresIn: '30m',
         algorithm: 'HS256',
         audience: config.jwt.audience,
         issuer: config.jwt.issuer,
@@ -74,10 +76,23 @@ export class AccountController {
       }
     );
 
+    // create refresh token and store to db
+    const refreshToken = uuidv4();
+    const updatedUser = await this.unitOfService.User.update(user.id, {
+      refreshToken: refreshToken, // Generate a new refresh token
+    });
+
+    if (!updatedUser) {
+      throw new CustomError('User not found', 404);
+    }
+
     response = {
       success: true,
       message: 'Login successful',
-      data: token,
+      data: {
+        token: token,
+        refreshToken: refreshToken,
+      },
     };
 
     return res.status(200).json(response);
@@ -124,14 +139,21 @@ export class AccountController {
    * @param res - Express response object used to send the response.
    * @returns A promise that resolves to an Express response containing a `CustomResponse` with the new JWT token as a string.
    */
-  refreshToken = async (req: Request, res: Response): Promise<Response<CustomResponse<string>>> => {
-    const { token } = req.body;
-    let response: CustomResponse<string>;
+  refreshToken = async (req: Request, res: Response): Promise<Response<CustomResponse<ITokenResponse>>> => {
+    const { token, refreshToken } = req.body;
+    let response: CustomResponse<ITokenResponse>;
 
     const decoded = jwt.verify(token, config.jwt.secret || '', {
       audience: config.jwt.audience,
       issuer: config.jwt.issuer,
     });
+
+    const user = await this.unitOfService.User.findById((decoded as any).id);
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    } else if (user.refreshToken !== refreshToken) {
+      throw new CustomError('Missing or invalid token', 401);
+    }
 
     const newToken = jwt.sign(
       {
@@ -145,7 +167,7 @@ export class AccountController {
       },
       config.jwt.secret || '',
       {
-        expiresIn: '30d',
+        expiresIn: '30m',
         algorithm: 'HS256',
         audience: config.jwt.audience,
         issuer: config.jwt.issuer,
@@ -153,10 +175,23 @@ export class AccountController {
       }
     );
 
+    //add new refresh token and store to db
+    const newRefreshToken = uuidv4();
+    const updatedUser = await this.unitOfService.User.update((decoded as any).id, {
+      refreshToken: newRefreshToken, // Generate a new refresh token
+    });
+
+    if (!updatedUser) {
+      throw new CustomError('User not found', 404);
+    }
+
     response = {
       success: true,
       message: 'Token refreshed successfully',
-      data: newToken,
+      data: {
+        token: newToken,
+        refreshToken: newRefreshToken,
+      },
     };
 
     return res.status(200).json(response);
@@ -174,6 +209,21 @@ export class AccountController {
    */
   logout = async (req: Request, res: Response): Promise<Response<CustomResponse<null>>> => {
     // Invalidate the token (implementation depends on token storage strategy, e.g., blacklist)
+    const { token } = req.body;
+
+    const decoded = jwt.verify(token, config.jwt.secret || '', {
+      audience: config.jwt.audience,
+      issuer: config.jwt.issuer,
+    });
+
+    const updatedUser = await this.unitOfService.User.update((decoded as any).id, {
+      refreshToken: null, // Invalidate the refresh token
+    });
+
+    if (!updatedUser) {
+      throw new CustomError('User not found', 404);
+    }
+
     const response: CustomResponse<null> = {
       success: true,
       message: 'Logout successful',

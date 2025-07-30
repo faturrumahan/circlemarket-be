@@ -165,6 +165,7 @@ export class UserService implements IUserService {
       twoFactorSecret: user.twoFactorSecret,
       role: user.role,
       isActive: user.isActive,
+      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

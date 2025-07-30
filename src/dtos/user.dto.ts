@@ -18,6 +18,7 @@ export interface UserDto {
   twoFactorSecret?: string | null;
   role?: UserRole;
   isActive?: boolean;
+  refreshToken?: string | null;
   createdAt: Date;
   updatedAt?: Date | null;
 }
@@ -39,6 +40,7 @@ export interface CreateUserDto {
   twoFactorSecret?: string;
   role?: UserRole;
   isActive?: boolean;
+  refreshToken?: string | null;
 }
 
 export interface UpdateUserDto extends Partial<CreateUserDto> {}
