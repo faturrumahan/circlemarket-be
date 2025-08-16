@@ -161,11 +161,11 @@ export class AccountController {
    * @returns A promise that resolves to an Express response containing a `CustomResponse` with the new JWT token as a string.
    */
   refreshToken = async (req: Request, res: Response): Promise<Response<CustomResponse<ITokenResponse>>> => {
-    const { token } = req.body;
+    const { jwtToken } = req.body;
     let response: CustomResponse<ITokenResponse>;
     const rt = req.cookies?.rt;
 
-    const decoded = jwt.verify(token, config.jwt.secret || '', {
+    const decoded = jwt.verify(jwtToken, config.jwt.secret || '', {
       audience: config.jwt.audience,
       issuer: config.jwt.issuer,
     });
