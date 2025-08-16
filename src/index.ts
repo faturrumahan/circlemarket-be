@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import * as bodyParser from 'body-parser';
+import cookieParser from "cookie-parser";
 import * as path from 'path';
 import routes from './routes/index.routes';
 import ClientIdMiddleware from './middlewares/clientid.middleware';
@@ -28,6 +29,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(asyncHandler(ClientIdMiddleware.verify));
+
+app.use(cookieParser());
 
 //route setup
 app.use('/api', routes);

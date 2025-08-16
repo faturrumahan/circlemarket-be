@@ -104,9 +104,17 @@ export class AccountController {
       message: 'Login successful',
       data: {
         token: token,
-        refreshToken: refreshToken,
       },
     };
+
+    // Set secure cookie (refresh token)
+    res.cookie('rt', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true in prod (https)
+      sameSite: 'strict',
+      path: "/api/auth",             // restrict path if you want
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds,
+    });
 
     return res.status(200).json(response);
   };
@@ -153,8 +161,9 @@ export class AccountController {
    * @returns A promise that resolves to an Express response containing a `CustomResponse` with the new JWT token as a string.
    */
   refreshToken = async (req: Request, res: Response): Promise<Response<CustomResponse<ITokenResponse>>> => {
-    const { token, refreshToken } = req.body;
+    const { token } = req.body;
     let response: CustomResponse<ITokenResponse>;
+    const rt = req.cookies?.rt;
 
     const decoded = jwt.verify(token, config.jwt.secret || '', {
       audience: config.jwt.audience,
@@ -164,7 +173,7 @@ export class AccountController {
     const user = await this.unitOfService.User.findById((decoded as any).id);
     if (!user) {
       throw new CustomError('User not found', 404);
-    } else if (user.refreshToken !== refreshToken) {
+    } else if (user.refreshToken !== rt) {
       throw new CustomError('Missing or invalid token', 401);
     }
 
@@ -216,9 +225,17 @@ export class AccountController {
       message: 'Token refreshed successfully',
       data: {
         token: newToken,
-        refreshToken: newRefreshToken,
       },
     };
+
+    // Set secure cookie (refresh token)
+    res.cookie('rt', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true in prod (https)
+      sameSite: 'strict',
+      path: "/api/auth",             // restrict path if you want
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds,
+    });
 
     return res.status(200).json(response);
   };
@@ -251,6 +268,7 @@ export class AccountController {
       data: null,
     };
 
+    res.clearCookie("rt", { path: "/api/auth" });
     return res.status(200).json(response);
   };
 }
