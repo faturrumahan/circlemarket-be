@@ -7,7 +7,7 @@ import { TYPES } from '../config/ioc.types';
 import CustomError from '../exceptions/custom-error';
 
 export class UserController {
-  constructor(private unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
+  constructor(private readonly unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
     this.unitOfService = unitOfService;
   }
 

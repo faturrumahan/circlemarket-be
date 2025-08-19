@@ -17,7 +17,7 @@ export const authentication = (req: Request, res: Response, next: NextFunction) 
   // Validate the token and retrieve its data.
   try {
     // Verify the payload fields.
-    jwtPayload = <any>verify(token?.split(' ')[1], config.jwt.secret!, {
+    jwtPayload = <any>verify(token?.split(' ')[1], config.jwt.secret, {
       complete: true,
       audience: config.jwt.audience,
       issuer: config.jwt.issuer,
@@ -36,11 +36,13 @@ export const authentication = (req: Request, res: Response, next: NextFunction) 
     req.body.currentUserName = jwtPayload.payload.email;
     req.body.currentUserRole = jwtPayload.payload.role;
   } catch (error) {
-    const response: CustomResponse<PlainDto> = {
-      success: false,
-      message: 'Missing or invalid token',
-    };
-    res.status(401).json(response);
+    if (error instanceof Error) {
+      const response: CustomResponse<PlainDto> = {
+        success: false,
+        message: 'Missing or invalid token',
+      };
+      res.status(401).json(response);
+    }
     return;
   }
 

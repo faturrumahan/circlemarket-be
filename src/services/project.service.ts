@@ -7,7 +7,7 @@ import { Project } from '../prisma/generated';
 
 @injectable()
 export class ProjectService implements IProjectService {
-  constructor(@inject(TYPES.IUnitOfWork) private unitOfWork: IUnitOfWork) {}
+  constructor(@inject(TYPES.IUnitOfWork) private readonly unitOfWork: IUnitOfWork) {}
 
   async findAll(): Promise<ProjectDto[]> {
     const projects = await this.unitOfWork.Project.findAll();

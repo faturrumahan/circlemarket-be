@@ -4,7 +4,7 @@ import IUnitOfService from '../services/interfaces/iunitof.service';
 import { TYPES } from '../config/ioc.types';
 
 export class HealthController {
-  constructor(private unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
+  constructor(private readonly unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
     this.unitOfService = unitOfService;
   }
 

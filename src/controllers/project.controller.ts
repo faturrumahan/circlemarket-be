@@ -7,7 +7,7 @@ import CustomResponse from '../dtos/custom-response';
 import CustomError from '../exceptions/custom-error';
 
 export class ProjectController {
-  constructor(private unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
+  constructor(private readonly unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
     this.unitOfService = unitOfService;
   }
 

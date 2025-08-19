@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ITokenResponse } from '../interfaces/tokenResponse.interface';
 
 export class AccountController {
-  constructor(private unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
+  constructor(private readonly unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
     this.unitOfService = unitOfService;
   }
 
