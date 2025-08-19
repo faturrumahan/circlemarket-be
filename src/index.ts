@@ -9,6 +9,8 @@ import routes from './routes/index.routes';
 import ClientIdMiddleware from './middlewares/clientid.middleware';
 import asyncHandler from './middlewares/asyncHandler.middleware';
 import errorHandler from './middlewares/errorHandler.middleware';
+import morganMiddleware from './middlewares/requestLogger.middleware';
+import logger from './config/logger';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +30,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //setup cors
 app.use(cors());
 
+// Add the morgan middleware for request logging
+app.use(morganMiddleware);
+
 app.use(asyncHandler(ClientIdMiddleware.verify));
 
 app.use(cookieParser());
@@ -40,5 +45,5 @@ app.use(errorHandler);
 
 // Start server
 app.listen(port, () => {
-  console.log(`Server is running on port http://localhost:${port}`);
+  logger.info(`Server is running on port http://localhost:${port}`);
 });

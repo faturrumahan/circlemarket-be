@@ -3,8 +3,16 @@ import CustomError from '../exceptions/custom-error';
 import CustomResponse from '../dtos/custom-response';
 import PlainDto from '../dtos/plain.dto';
 import ResponseErrorDto from '../dtos/response-error.dto';
+import logger from '../config/logger';
 
 export default function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  // Log the full error object for internal debugging
+  logger.error(`Error: ${err.message || 'Unknown error'}`, {
+    error: err, // Pass the full error object
+    request: { method: req.method, url: req.originalUrl, body: req.body, ip: req.ip },
+    stack: err.stack, // Ensure stack is logged
+  });
+
   if (!(err instanceof CustomError)) {
     const response: CustomResponse<PlainDto> = {
       success: false,
