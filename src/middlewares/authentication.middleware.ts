@@ -3,19 +3,26 @@ import { verify, JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import PlainDto from '../dtos/plain.dto';
 import CustomResponse from '../dtos/custom-response';
+import redisClient from '../config/redis';
 
 // The CustomRequest interface enables us to provide JWTs to our controllers.
 export interface CustomRequest extends Request {
   token: JwtPayload;
 }
 
-export const authentication = (req: Request, res: Response, next: NextFunction) => {
+export const authentication = async (req: Request, res: Response, next: NextFunction) => {
   // Get the JWT from the request header.
   const token = <string>req.headers['authorization'];
   let jwtPayload;
 
   // Validate the token and retrieve its data.
   try {
+    //check token availability in redis
+    const user = await redisClient.get(token);
+    if (!user) {
+      throw new Error('Missing or invalid token');
+    }
+
     // Verify the payload fields.
     jwtPayload = <any>verify(token?.split(' ')[1], config.jwt.secret, {
       complete: true,

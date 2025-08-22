@@ -13,6 +13,7 @@ import { UserDto } from '../dtos/user.dto';
 import { UserRole } from '../prisma/generated';
 import { v4 as uuidv4 } from 'uuid';
 import { ITokenResponse } from '../interfaces/tokenResponse.interface';
+import redisClient from '../config/redis';
 
 export class AccountController {
   constructor(private readonly unitOfService = container.get<IUnitOfService>(TYPES.IUnitOfService)) {
@@ -99,6 +100,8 @@ export class AccountController {
       throw new CustomError('User not found', 404);
     }
 
+    await redisClient.setEx(token, 60 * 30, user.email);
+
     response = {
       success: true,
       message: 'Login successful',
@@ -112,7 +115,7 @@ export class AccountController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // true in prod (https)
       sameSite: 'strict',
-      path: "/api/auth",             // restrict path if you want
+      path: '/api/auth', // restrict path if you want
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds,
     });
 
@@ -233,7 +236,7 @@ export class AccountController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // true in prod (https)
       sameSite: 'strict',
-      path: "/api/auth",             // restrict path if you want
+      path: '/api/auth', // restrict path if you want
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds,
     });
 
@@ -252,7 +255,7 @@ export class AccountController {
    */
   logout = async (req: Request, res: Response): Promise<Response<CustomResponse<null>>> => {
     // Invalidate the token (implementation depends on token storage strategy, e.g., blacklist)
-    const { currentUserId } = req.body;
+    const { currentUserId, jwtToken } = req.body;
 
     const updatedUser = await this.unitOfService.User.update(currentUserId, {
       refreshToken: null, // Invalidate the refresh token
@@ -268,7 +271,8 @@ export class AccountController {
       data: null,
     };
 
-    res.clearCookie("rt", { path: "/api/auth" });
+    await redisClient.del(jwtToken);
+    res.clearCookie('rt', { path: '/api/auth' });
     return res.status(200).json(response);
   };
 }
