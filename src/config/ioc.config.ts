@@ -20,6 +20,11 @@ import UnitOfWork from '../repositories/unitofwork.repository';
 import IUnitOfWork from '../repositories/interfaces/iunitofwork.repository';
 import { ProjectRepository } from '../repositories/project.repository';
 import { IProjectRepository } from '../repositories/interfaces/iproject.repository';
+import { EventOrganizerController } from '../controllers/eventOrganizer.controller';
+import { IEventOrganizerService } from '../services/interfaces/iEventOrganizer.service';
+import EventOrganizerService from '../services/eventOrganizer.service';
+import { IEventOrganizerRepository } from '../repositories/interfaces/iEventOrganizer.repository';
+import { EventOrganizerRepository } from '../repositories/eventOrganizer.repository';
 
 const container = new Container();
 
@@ -27,14 +32,17 @@ container.bind<HealthController>(TYPES.HealthController).to(HealthController);
 container.bind<AccountController>(TYPES.AccountController).to(AccountController);
 container.bind<UserController>(TYPES.UserController).to(UserController);
 container.bind<ProjectController>(TYPES.ProjectController).to(ProjectController);
+container.bind<EventOrganizerController>(TYPES.EventOrganizerController).to(EventOrganizerController);
 
 container.bind<IUnitOfService>(TYPES.IUnitOfService).to(UnitOfService);
 container.bind<IUserService>(TYPES.IUserService).to(UserService);
+container.bind<IProjectService>(TYPES.IProjectService).to(ProjectService);
+container.bind<IEventOrganizerService>(TYPES.IEventOrganizerService).to(EventOrganizerService);
 
 container.bind<IUnitOfWork>(TYPES.IUnitOfWork).to(UnitOfWork);
 container.bind<IUserRepository>(TYPES.IUserRepository).to(UserRepository);
-
 container.bind<IProjectRepository>(TYPES.IProjectRepository).to(ProjectRepository);
-container.bind<IProjectService>(TYPES.IProjectService).to(ProjectService);
+container.bind<IEventOrganizerRepository>(TYPES.IEventOrganizerRepository).to(EventOrganizerRepository);
+
 
 export default container;

@@ -1,0 +1,14 @@
+model Event {
+    id          String   @id @default(cuid())
+    title       String
+    description String
+    date        DateTime
+    location    String
+    image       ImageEvent[]
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relation to EventOrganizer
+    eventOrganizerId String
+    eventOrganizer   EventOrganizer @relation(fields: [eventOrganizerId], references: [id])
+}

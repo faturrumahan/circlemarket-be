@@ -1,10 +1,12 @@
 import { IUserRepository } from './iuser.repository';
 import { Prisma } from '../../prisma/generated';
 import { IProjectRepository } from './iproject.repository';
+import { IEventOrganizerRepository } from './iEventOrganizer.repository';
 
 export default interface IUnitOfWork {
   User: IUserRepository;
   Project: IProjectRepository;
+  EventOrganizer: IEventOrganizerRepository;
 
   /**
    * Executes a set of operations within a database transaction.

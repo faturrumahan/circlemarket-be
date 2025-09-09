@@ -1,0 +1,16 @@
+model ImageEvent {
+    id      String @id @default(cuid())
+    url     String
+    altText String
+    eventId String
+    event   Event  @relation(fields: [eventId], references: [id])
+}
+
+model ImageOrganizer {
+    id          String         @id @default(cuid())
+    url         String
+    altText     String
+    organizerId String
+    deleteId    String?
+    organizer   EventOrganizer @relation(fields: [organizerId], references: [id])
+}

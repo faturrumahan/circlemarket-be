@@ -18,7 +18,8 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
   // Validate the token and retrieve its data.
   try {
     //check token availability in redis
-    const user = await redisClient.get(token);
+    const jwt = token?.split(' ')[1] || '';
+    const user = await redisClient.get(jwt);
     if (!user) {
       throw new Error('Missing or invalid token');
     }

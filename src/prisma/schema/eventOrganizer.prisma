@@ -1,0 +1,12 @@
+model EventOrganizer {
+    id          String   @id @default(cuid())
+    name        String
+    email       String   @unique
+    phone       String
+    location    String
+    events      Event[]
+    image       ImageOrganizer[]
+    description String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}

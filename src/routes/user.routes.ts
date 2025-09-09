@@ -15,6 +15,6 @@ userRouter.get('/me', [authentication], asyncHandler(userController.getCurrentUs
 userRouter.get('/getbyemail', [authentication], asyncHandler(userController.getUserByEmail));
 userRouter.get('/:id', [authentication], asyncHandler(userController.getUserById));
 userRouter.put('/:id', [authentication], asyncHandler(userController.updateUserById));
-userRouter.delete('/:id', [authentication, authorization([Roles.Administrator])], asyncHandler(userController.deleteUserById));
+userRouter.delete('/:id', [authentication], asyncHandler(userController.deleteUserById));
 
 export default userRouter;
